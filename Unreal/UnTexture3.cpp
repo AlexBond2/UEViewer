@@ -563,11 +563,12 @@ struct TFCManifest_MH
 {
 	FString				TFCName;
 	FGuid				Guid;
+	FString				TFCLib;
 	TArray<MHManifestMip> Mips;
 
 	friend FArchive& operator<<(FArchive &Ar, TFCManifest_MH &M)
 	{
-		return Ar << M.TFCName << M.Guid << M.Mips;
+		return Ar << M.TFCName << M.Guid << M.TFCLib << M.Mips;
 	}
 };
 
@@ -587,10 +588,12 @@ static void ReadMarvelHeroesTFCManifest()
 		appPrintf("WARNING: unable to find %s\n", "TextureFileCacheManifest.bin");
 		return;
 	}
+
 	FArchive *Ar = appCreateFileReader(fileInfo);
 	Ar->Game  = GAME_MarvelHeroes;
 	Ar->ArVer = 859;			// just in case
 	Ar->ArLicenseeVer = 3;
+	
 	*Ar << mhTFCmanifest;
 	assert(Ar->IsEof());
 
@@ -613,6 +616,7 @@ static int GetRealTextureOffset_MH(const UTexture2D *Obj, int MipIndex)
 		if (M.Guid == Obj->TextureFileCacheGuid)
 		{
 			const MHManifestMip &Mip = M.Mips[0];
+			if (Mip.Index != MipIndex) return -1;
 			assert(Mip.Index == MipIndex);
 			appPrintf("%s - %08X-%08X-%08X-%08X = %X %X\n", *M.TFCName, M.Guid.A, M.Guid.B, M.Guid.C, M.Guid.D, Mip.Offset, Mip.Size);
 			return Mip.Offset;
@@ -726,12 +730,12 @@ bool UTexture2D::LoadBulkTexture(const TArray<FTexture2DMipMap> &MipsArray, int 
 		}
 #endif // DCU_ONLINE
 #if MARVEL_HEROES
-		if (Package->Game == GAME_MarvelHeroes)
-		{
+		//if (Package->Game == GAME_MarvelHeroes)
+		//{
 			int Offset = GetRealTextureOffset_MH(this, MipIndex);
 			if (Offset < 0) return false;
 			Bulk->BulkDataOffsetInFile = Offset;
-		}
+		//}
 #endif // MARVEL_HEROES
 		if (Bulk->BulkDataOffsetInFile < 0)
 		{
@@ -739,7 +743,7 @@ bool UTexture2D::LoadBulkTexture(const TArray<FTexture2DMipMap> &MipsArray, int 
 			return false;
 		}
 	}
-//	appPrintf("Bulk %X %llX [%d] f=%X\n", Bulk, Bulk->BulkDataOffsetInFile, Bulk->ElementCount, Bulk->BulkDataFlags);
+	appPrintf("Bulk %X %llX [%d] f=%X\n", Bulk, Bulk->BulkDataOffsetInFile, Bulk->ElementCount, Bulk->BulkDataFlags);
 	Bulk->SerializeData(*Ar);
 	delete Ar;
 	return true;
