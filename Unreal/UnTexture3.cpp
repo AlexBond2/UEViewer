@@ -183,7 +183,7 @@ void UTexture2D::Serialize(FArchive &Ar)
 skip_rest:
 	if (Ar.Tell() < Ar.GetStopper())
 	{
-		appPrintf("UTexture2D %s: dropping %d bytes\n", Name, Ar.GetStopper() - Ar.Tell());
+		//appPrintf("UTexture2D %s: dropping %d bytes\n", Name, Ar.GetStopper() - Ar.Tell());
 	skip_rest_quiet:
 		DROP_REMAINING_DATA(Ar);
 	}
@@ -560,14 +560,15 @@ struct MHManifestMip
 };
 
 struct TFCManifest_MH
-{
+{	
 	FString				TFCName;
 	FGuid				Guid;
+	FString				TFCLib;
 	TArray<MHManifestMip> Mips;
 
 	friend FArchive& operator<<(FArchive &Ar, TFCManifest_MH &M)
 	{
-		return Ar << M.TFCName << M.Guid << M.Mips;
+		return Ar << M.TFCName << M.Guid << M.TFCLib << M.Mips;
 	}
 };
 
@@ -587,10 +588,12 @@ static void ReadMarvelHeroesTFCManifest()
 		appPrintf("WARNING: unable to find %s\n", "TextureFileCacheManifest.bin");
 		return;
 	}
+
 	FArchive *Ar = appCreateFileReader(fileInfo);
 	Ar->Game  = GAME_MarvelHeroes;
 	Ar->ArVer = 859;			// just in case
 	Ar->ArLicenseeVer = 3;
+	
 	*Ar << mhTFCmanifest;
 	assert(Ar->IsEof());
 
@@ -603,18 +606,20 @@ static void ReadMarvelHeroesTFCManifest()
 static int GetRealTextureOffset_MH(const UTexture2D *Obj, int MipIndex)
 {
 	guard(GetRealTextureOffset_MH);
-
+	
 	ReadMarvelHeroesTFCManifest();
-
-	appPrintf("LOOK %08X-%08X-%08X-%08X\n", Obj->TextureFileCacheGuid.A, Obj->TextureFileCacheGuid.B, Obj->TextureFileCacheGuid.C, Obj->TextureFileCacheGuid.D);
+	//appPrintf("LOOK %08X-%08X-%08X-%08X\n", Obj->TextureFileCacheGuid.A, Obj->TextureFileCacheGuid.B, Obj->TextureFileCacheGuid.C, Obj->TextureFileCacheGuid.D);
+	
 	for (int i = 0; i < mhTFCmanifest.Num(); i++)
 	{
 		const TFCManifest_MH &M = mhTFCmanifest[i];
 		if (M.Guid == Obj->TextureFileCacheGuid)
 		{
 			const MHManifestMip &Mip = M.Mips[0];
+			if (Mip.Index != MipIndex) return -1;
 			assert(Mip.Index == MipIndex);
 			appPrintf("%s - %08X-%08X-%08X-%08X = %X %X\n", *M.TFCName, M.Guid.A, M.Guid.B, M.Guid.C, M.Guid.D, Mip.Offset, Mip.Size);
+
 			return Mip.Offset;
 		}
 	}
@@ -709,12 +714,21 @@ bool UTexture2D::LoadBulkTexture(const TArray<FTexture2DMipMap> &MipsArray, int 
 
 	assert(bulkFile);									// missing file is processed above
 	if (verbose)
-		appPrintf("Reading %s mip level %d (%dx%d) from %s\n", Name, MipIndex, Mip.SizeX, Mip.SizeY, bulkFile->RelativeName);
+	//	appPrintf("Reading %s mip level %d (%dx%d) from file %s\n", Name, MipIndex, Mip.SizeX, Mip.SizeY, bulkFile->RelativeName);
+
+		appPrintf("TFC %s %08X-%08X-%08X-%08X %d [%dx%d] %s\n", Name, 
+		TextureFileCacheGuid.A, TextureFileCacheGuid.B, TextureFileCacheGuid.C, TextureFileCacheGuid.D,
+		MipIndex,
+		Mips[MipIndex].SizeX, Mips[MipIndex].SizeY, 
+		EnumToName("EPixelFormat", Format));
+
+	return true;
 
 	FArchive *Ar = appCreateFileReader(bulkFile);
 	Ar->SetupFrom(*Package);
 	FByteBulkData *Bulk = const_cast<FByteBulkData*>(&Mip.Data);
-	if (Bulk->BulkDataOffsetInFile < 0)
+	
+	/*if (Bulk->BulkDataOffsetInFile < 0)
 	{
 #if DCU_ONLINE
 		if (Package->Game == GAME_DCUniverse)
@@ -724,22 +738,22 @@ bool UTexture2D::LoadBulkTexture(const TArray<FTexture2DMipMap> &MipsArray, int 
 			Bulk->BulkDataOffsetInFile = Offset - Bulk->BulkDataOffsetInFile - 1;
 //			appPrintf("OFFS: %X\n", Bulk->BulkDataOffsetInFile);
 		}
-#endif // DCU_ONLINE
+#endif // DCU_ONLINE*/
 #if MARVEL_HEROES
-		if (Package->Game == GAME_MarvelHeroes)
-		{
+		//if (Package->Game == GAME_MarvelHeroes)
+		//{		
 			int Offset = GetRealTextureOffset_MH(this, MipIndex);
 			if (Offset < 0) return false;
 			Bulk->BulkDataOffsetInFile = Offset;
-		}
+		//}
 #endif // MARVEL_HEROES
 		if (Bulk->BulkDataOffsetInFile < 0)
 		{
 			appPrintf("ERROR: BulkOffset = %d\n", (int)Bulk->BulkDataOffsetInFile);
 			return false;
 		}
-	}
-//	appPrintf("Bulk %X %llX [%d] f=%X\n", Bulk, Bulk->BulkDataOffsetInFile, Bulk->ElementCount, Bulk->BulkDataFlags);
+	//}
+	//appPrintf("Bulk %X %llX [%d] f=%X\n", Bulk, Bulk->BulkDataOffsetInFile, Bulk->ElementCount, Bulk->BulkDataFlags);
 	Bulk->SerializeData(*Ar);
 	delete Ar;
 	return true;

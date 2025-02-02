@@ -1234,7 +1234,7 @@ void FByteBulkData::SerializeData(FArchive &Ar)
 			{
 				// At least Special Force 2 has this situation with correct data - perhaps BulkDataSizeOnDisk is wrong there.
 				// Let's spam, but don't crash.
-				appNotify("Serialize bulk data: current position %llX, expected %llX", Ar.Tell64(), BulkDataOffsetInFile + BulkDataSizeOnDisk);
+				//appNotify("Serialize bulk data: current position %llX, expected %llX", Ar.Tell64(), BulkDataOffsetInFile + BulkDataSizeOnDisk);
 			}
 		}
 		else

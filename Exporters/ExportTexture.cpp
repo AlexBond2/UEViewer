@@ -243,7 +243,7 @@ void ExportTexture(const UUnrealMaterial *Tex)
 	{
 		if (GExportDDS && TexData.IsDXT())
 		{
-			WriteDDS(TexData, GetExportFileName(Tex, "%s.dds", Tex->Name));
+			// WriteDDS(TexData, GetExportFileName(Tex, "%s.dds", Tex->Name));
 			return;
 		}
 

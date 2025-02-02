@@ -142,7 +142,7 @@ void UObject::EndLoad()
 		UnPackage *Package = Obj->Package;
 		guard(LoadObject);
 		Package->SetupReader(Obj->PackageIndex);
-		appPrintf("Loading %s %s from package %s\n", Obj->GetClassName(), Obj->Name, Package->Filename);
+		// appPrintf("Loading %s %s from package %s\n", Obj->GetClassName(), Obj->Name, Package->Filename);
 		// setup NotifyInfo to describe object
 		appSetNotifyHeader("Loading object %s'%s.%s'", Obj->GetClassName(), Package->Name, Obj->Name);
 #if PROFILE_LOADING

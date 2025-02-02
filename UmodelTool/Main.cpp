@@ -281,20 +281,20 @@ static void ExportAnimSet(const UAnimSet *Anim)
 
 static void RegisterExporters()
 {
-	RegisterExporter("SkeletalMesh",  ExportSkeletalMesh2);
+	/*RegisterExporter("SkeletalMesh", ExportSkeletalMesh2);
 	RegisterExporter("MeshAnimation", ExportMeshAnimation);
 #if UNREAL3
 	RegisterExporter("SkeletalMesh3", ExportSkeletalMesh3);
 	RegisterExporter("AnimSet",       ExportAnimSet      );
 #endif
 	RegisterExporter("VertMesh",      Export3D         );
-	RegisterExporter("StaticMesh",    ExportStaticMesh2);
+	RegisterExporter("StaticMesh",    ExportStaticMesh2);*/
 	RegisterExporter("Texture",       ExportTexture    );
-	RegisterExporter("Sound",         ExportSound      );
+/*	RegisterExporter("Sound", ExportSound);
 #if UNREAL3
-	RegisterExporter("StaticMesh3",   ExportStaticMesh3  );
+	RegisterExporter("StaticMesh3",   ExportStaticMesh3  );*/
 	RegisterExporter("Texture2D",     ExportTexture      );
-	RegisterExporter("SoundNodeWave", ExportSoundNodeWave);
+/*	RegisterExporter("SoundNodeWave", ExportSoundNodeWave);
 	RegisterExporter("SwfMovie",      ExportGfx          );
 	RegisterExporter("FaceFXAnimSet", ExportFaceFXAnimSet);
 	RegisterExporter("FaceFXAsset",   ExportFaceFXAsset  );
@@ -303,7 +303,7 @@ static void RegisterExporters()
 	RegisterExporter("SkeletalMesh4", ExportSkeletalMesh4);
 	RegisterExporter("StaticMesh4",   ExportStaticMesh4  );
 #endif
-	RegisterExporter("UnrealMaterial", ExportMaterial);			// register this after Texture/Texture2D exporters
+	RegisterExporter("UnrealMaterial", ExportMaterial);	*/		// register this after Texture/Texture2D exporters
 }
 
 

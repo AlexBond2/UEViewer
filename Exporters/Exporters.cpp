@@ -139,6 +139,7 @@ bool ExportObject(const UObject *Obj)
 		const CExporterInfo &Info = exporters[i];
 		if (Obj->IsA(Info.ClassName))
 		{
+			/*
 			char ExportPath[1024];
 			strcpy(ExportPath, GetExportPath(Obj));
 			const char *ClassName  = Obj->GetClassName();
@@ -155,13 +156,14 @@ bool ExportObject(const UObject *Obj)
 				//?? HACK: temporary replace object name with unique one
 				OriginalName = Obj->Name;
 				const_cast<UObject*>(Obj)->Name = uniqueName;
-			}
+			}*/
 
-			appPrintf("Exporting %s %s to %s\n", Obj->GetClassName(), Obj->Name, ExportPath);
+			//appPrintf("Exporting %s %s to %s\n", Obj->GetClassName(), Obj->Name, ExportPath);
+
 			Info.Func(Obj);
 
 			//?? restore object name
-			if (OriginalName) const_cast<UObject*>(Obj)->Name = OriginalName;
+			//if (OriginalName) const_cast<UObject*>(Obj)->Name = OriginalName;
 			return true;
 		}
 	}
