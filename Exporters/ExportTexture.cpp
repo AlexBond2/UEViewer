@@ -245,8 +245,8 @@ void ExportTexture(const UUnrealMaterial *Tex)
 		{
 			// WriteDDS(TexData, GetExportFileName(Tex, "%s.dds", Tex->Name));
 			return;
-		}
-
+		}		
+		return;
 		width = TexData.Mips[0].USize;
 		height = TexData.Mips[0].VSize;
 		pic = TexData.Decompress();
