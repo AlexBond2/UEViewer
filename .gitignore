@@ -2,6 +2,7 @@
 data/
 obj/
 bak/
+.vs/
 
 # Generated files
 Unreal/Shaders.h
